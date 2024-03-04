@@ -101,31 +101,57 @@ class SequantTools:
         )
 
     def filter_sequences(
-            self,
-            shuffle: bool = True
+            self
     ):
         """
         Filters sequences based on the maximum length and content of known monomers.
-        :param shuffle: Set to True to shuffle list items.
         """
-        all_sequences: list[str] = list({
-            sequence.upper() for sequence in self.sequences if len(sequence) <= self.max_length
-        })
+        all_sequences: list[str] = []
+        bigger_then_max_sequence: list[str] = []
+        for sequence in self.sequences:
+            if len(sequence) <= self.max_length:
+                all_sequences.append(sequence.upper())
+            else:
+                bigger_then_max_sequence.append(sequence)
+
+        if len(bigger_then_max_sequence) != 0:
+            error_text = """
+                There are the sequences whose length exceeds the maximum = {max_length}:
+                {sequences}
+                """
+            raise ValueError(
+                error_text.format(
+                    max_length=self.max_length,
+                    sequences=bigger_then_max_sequence
+                )
+            )
+
         self.filtered_sequences = [
             sequence for sequence in all_sequences if set(sequence).issubset(set(self.monomer_smiles_info.keys()))
         ]
-        if not self.ignore_unknown_monomer and len(all_sequences) != len(self.filtered_sequences):
-            raise ValueError(
-                """
-                There are unknown monomers in sequences. Please add them in with using new_monomers parameter
-                or set ignore_unknown_monomer as True.
-                """
-            )
+        unknown_monomers_sequence = []
+        known_monomers = set(self.monomer_smiles_info.keys())
+        for sequence in all_sequences:
+            if set(sequence).issubset(known_monomers):
+                self.filtered_sequences.append(sequence)
+            else:
+                unknown_monomers_sequence.append(sequence)
 
-        if shuffle:
-            self.filtered_sequences: list[str] = random.sample(
-                self.filtered_sequences,
-                len(self.filtered_sequences)
+        if not self.ignore_unknown_monomer and len(unknown_monomers_sequence) != 0:
+            unknown_monomers: list[str] = []
+            for sequence in unknown_monomers_sequence:
+                unknown_monomers.extend(list(set(sequence) - known_monomers))
+
+            unknown_monomers = list(set(unknown_monomers))
+            error_text = """
+                There are unknown monomers in sequences:
+                {unknown_monomers}.
+                Please add them in with using new_monomers parameter or set ignore_unknown_monomer as True.
+                """
+            raise ValueError(
+                error_text.format(
+                    unknown_monomers=unknown_monomers
+                )
             )
 
     def define_prefix(self):
