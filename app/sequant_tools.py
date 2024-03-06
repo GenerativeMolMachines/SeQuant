@@ -24,7 +24,7 @@ class SequantTools:
         self,
         sequences: list[str] = [],
         polymer_type: str = '',
-        max_sequence_length: int = 48,
+        max_sequence_length: int = 96,
         model_folder_path: str = '',
         normalize: bool = True,
         feature_range: tuple[int, int] = (-1, 1),
