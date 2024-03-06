@@ -24,7 +24,7 @@ class SequantTools:
         self,
         sequences: list[str] = [],
         polymer_type: str = '',
-        max_sequence_length: int = 96,
+        max_sequence_length: int = 48,
         model_folder_path: str = '',
         normalize: bool = True,
         feature_range: tuple[int, int] = (-1, 1),
@@ -45,6 +45,7 @@ class SequantTools:
         :param new_monomers: list of dicts with new monomers: {'name':'str', 'class':'protein/DNA/RNA', 'smiles':'str'}
         """
         self.descriptors: pd.DataFrame = pd.DataFrame()
+        self.latent_representation_df = pd.DataFrame()
         self.filtered_sequences: list[str] = []
         self.prefix: str = ''
         self.encoded_sequences: tf.Tensor = []
@@ -52,6 +53,7 @@ class SequantTools:
         self.peptide_descriptor_names: list[str] = []
         self.peptide_descriptors: npt.NDArray = []
         self.latent_representation: npt.NDArray = []
+        self.descriptor_names: list[str] = []
 
         self.sequences = sequences
         self.polymer_type = polymer_type
@@ -78,11 +80,11 @@ class SequantTools:
         """
         Generates descriptors for monomers in dict[monomer_name, smiles] using rdkit.
         """
-        descriptor_names: list[str] = list(Chem.rdMolDescriptors.Properties.GetAvailableProperties())
-        num_descriptors: int = len(descriptor_names)
+        self.descriptor_names = list(Chem.rdMolDescriptors.Properties.GetAvailableProperties())
+        num_descriptors: int = len(self.descriptor_names)
         descriptors_set: npt.NDArray = np.empty((0, num_descriptors), float)
 
-        get_descriptors = Chem.rdMolDescriptors.Properties(descriptor_names)
+        get_descriptors = Chem.rdMolDescriptors.Properties(self.descriptor_names)
 
         for _, value in self.monomer_smiles_info.items():
             molecule = Chem.MolFromSmiles(value)
@@ -91,12 +93,11 @@ class SequantTools:
             ).reshape((-1, num_descriptors))
             descriptors_set = np.append(descriptors_set, descriptors, axis=0)
 
-        if self.normalize:
-            descriptors_set = self.scaler.fit_transform(descriptors_set)
+        descriptors_set = MinMaxScaler(feature_range=(-1, 1)).fit_transform(descriptors_set)
 
         self.descriptors = pd.DataFrame(
             descriptors_set,
-            columns=descriptor_names,
+            columns=self.descriptor_names,
             index=list(self.monomer_smiles_info.keys())
         )
 
@@ -115,20 +116,10 @@ class SequantTools:
                 bigger_then_max_sequence.append(sequence)
 
         if len(bigger_then_max_sequence) != 0:
-            error_text = """
-                There are the sequences whose length exceeds the maximum = {max_length}:
-                {sequences}
-                """
-            raise ValueError(
-                error_text.format(
-                    max_length=self.max_length,
-                    sequences=bigger_then_max_sequence
-                )
-            )
+            error_text = f'There are the sequences whose length exceeds the maximum = {self.max_length}: \n' \
+                        f'{bigger_then_max_sequence}.'
+            raise ValueError(error_text)
 
-        self.filtered_sequences = [
-            sequence for sequence in all_sequences if set(sequence).issubset(set(self.monomer_smiles_info.keys()))
-        ]
         unknown_monomers_sequence = []
         known_monomers = set(self.monomer_smiles_info.keys())
         for sequence in all_sequences:
@@ -143,16 +134,10 @@ class SequantTools:
                 unknown_monomers.extend(list(set(sequence) - known_monomers))
 
             unknown_monomers = list(set(unknown_monomers))
-            error_text = """
-                There are unknown monomers in sequences:
-                {unknown_monomers}.
-                Please add them in with using new_monomers parameter or set ignore_unknown_monomer as True.
-                """
-            raise ValueError(
-                error_text.format(
-                    unknown_monomers=unknown_monomers
-                )
-            )
+            error_text = 'There are unknown monomers in sequences: \n' \
+                f'{unknown_monomers}. \n' \
+                'Please add them in with using new_monomers parameter or set ignore_unknown_monomer as True.'
+            raise ValueError(error_text)
 
     def define_prefix(self):
         """
@@ -221,7 +206,7 @@ class SequantTools:
         :return: Sequences/descriptor tensor.
         """
         container = []
-        for i, sequence in tqdm(enumerate(self.filtered_sequences)):
+        for sequence in tqdm(self.filtered_sequences):
             seq_matrix = tf.expand_dims(
                 self.sequence_to_descriptor_matrix(
                     sequence=sequence
@@ -234,8 +219,9 @@ class SequantTools:
         return self.encoded_sequences
 
     def generate_latent_representations(
-            self
-    ) -> np.ndarray:
+            self,
+            dataframe=True
+    ) -> np.ndarray | pd.DataFrame:
         """
         Processes the sequences/descriptor tensor using a model.
         :return: Ready-made features.
@@ -251,6 +237,16 @@ class SequantTools:
                 (self.latent_representation, self.peptide_descriptors),
                 axis=1
             )
+
+        if dataframe:
+            descriptor_names_repl = [i + '_repr' for i in self.descriptor_names + self.peptide_descriptor_names]
+            self.latent_representation_df = pd.DataFrame(
+                self.latent_representation,
+                columns=descriptor_names_repl,
+                index=self.filtered_sequences
+            )
+            return self.latent_representation_df
+
         return self.latent_representation
 
     def define_peptide_generated_descriptors(
