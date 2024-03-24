@@ -80,3 +80,16 @@ def train_test_split(peptides, train_data_ratio):
     train_data = peptides[idx_train]
     test_data = peptides[idx_test]
     return train_data, test_data
+
+
+def filter_sequences(sequences, known_symbols):
+    filtered_sequences = []
+    for seq in sequences:
+        valid_sequence = True
+        for char in seq:
+            if char not in known_symbols:
+                valid_sequence = False
+                break
+        if valid_sequence:
+            filtered_sequences.append(seq)
+    return filtered_sequences
