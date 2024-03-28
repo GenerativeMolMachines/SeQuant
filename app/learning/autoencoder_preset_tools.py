@@ -52,7 +52,7 @@ def seq_to_matrix(
 
 def encode_seqs(
     sequences_list: list[str],
-    descriptors: dict[str, str],
+    descriptors: pd.DataFrame,
     num: int
 ):
     lst = []
@@ -80,3 +80,14 @@ def train_test_split(peptides, train_data_ratio):
     train_data = peptides[idx_train]
     test_data = peptides[idx_test]
     return train_data, test_data
+
+
+def filter_sequences(
+        sequences: np.array,
+        known_symbols: dict[str, str]
+):
+    filtered_sequences = []
+    for seq in sequences:
+        if set(seq).issubset(set(known_symbols)):
+            filtered_sequences.append(seq)
+    return filtered_sequences

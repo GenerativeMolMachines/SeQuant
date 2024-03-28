@@ -11,7 +11,8 @@ from autoencoder_preset_tools import (
     seq_to_matrix,
     encode_seqs,
     preprocess_input,
-    train_test_split
+    train_test_split,
+    filter_sequences
 )
 from autoencoder import autoencoder_model
 
@@ -45,19 +46,19 @@ tf.random.set_seed(2022)
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 # Processing labeled data (AMPs database)
-labeled_data = pd.read_csv('/content/drive/MyDrive/SeQuant/AMPs/AMP_ADAM2.txt', on_bad_lines='skip')
+labeled_data = pd.read_csv('../utils/data/AMP_ADAM2.txt', on_bad_lines='skip')
 labeled_data = labeled_data.replace('+', 1)
 labeled_data = labeled_data.fillna(0)
 labeled_data = labeled_data.drop(labeled_data[labeled_data.SEQ.str.contains(r'[@#&$%+-/*BXZ]')].index)
 labeled_data_seqs = labeled_data['SEQ'].to_list()
 
 # Processing unlabeled data (Non-AMPs and CPPBase)
-with open('/content/drive/MyDrive/SeQuant/Non-AMPs.txt') as f:
+with open('../utils/data/Non-AMPs.txt') as f:
     file = f.readlines()
 raw_seqs = file[1::2]
 unlabeled_data = [s.replace("\n", "") for s in raw_seqs]
 
-with open('/content/drive/MyDrive/SeQuant/CPPBase/natural_pep (cpp).txt') as f:
+with open('../utils/data/natural_pep (cpp).txt') as f:
     file = f.readlines()
 raw_seqs = file[1::2]
 unlabeled_data_2 = [s.replace("\n", "") for s in raw_seqs]
@@ -69,7 +70,7 @@ with open("/content/drive/MyDrive/SeQuant/UniProt/uniprot_sprot.txt","w") as f:
                 f.write(str(seq_record.seq) + "\n")
 '''
 
-with open('/content/drive/MyDrive/SeQuant/UniProt/uniprot_sprot.txt') as f:
+with open('../utils/data/uniprot_sprot.txt') as f:
     raw_seqs_2 = f.readlines()
 unlabeled_data_3 = [s.replace("\n", "") for s in raw_seqs_2]
 
@@ -80,7 +81,7 @@ with open("/content/drive/MyDrive/SeQuant/SPENCER/SPENCER_ORF_protein_sequence.t
                 f.write(str(seq_record.seq) + "\n")
 '''
 
-with open('/content/drive/MyDrive/SeQuant/SPENCER/SPENCER_ORF_protein_sequence.txt') as f:
+with open('../utils/data/SPENCER_ORF_protein_sequence.txt') as f:
     raw_seqs_2 = f.readlines()
 unlabeled_data_4 = [s.replace("\n", "") for s in raw_seqs_2]
 
@@ -91,30 +92,23 @@ with open("/content/drive/MyDrive/SeQuant/HSPVdb/hspvfullR58HET.txt","w") as f:
                 f.write(str(seq_record.seq) + "\n")
 '''
 
-with open('/content/drive/MyDrive/SeQuant/HSPVdb/hspvfullR58HET.txt') as f:
+with open('../utils/data/hspvfullR58HET.txt') as f:
     raw_seqs_2 = f.readlines()
 unlabeled_data_5 = [s.replace("\n", "") for s in raw_seqs_2]
 
 # DBAASP database
-dbaasp = pd.read_csv('/content/drive/MyDrive/SeQuant/DBAASP/peptides.csv')
-dbaasp_2 = pd.read_csv('/content/drive/MyDrive/SeQuant/DBAASP/peptides_2.csv')
+dbaasp = pd.read_csv('../utils/data/peptides.csv')
+dbaasp_2 = pd.read_csv('../utils/data/peptides_2.csv')
 unlabeled_data_6 = list(
     dict.fromkeys(dbaasp['SEQUENCE'].astype('str').tolist() + dbaasp_2['SEQUENCE'].astype('str').tolist()))
 
 # Merged data for CAE training
 all_seqs = labeled_data_seqs + unlabeled_data + unlabeled_data_2 + unlabeled_data_3 + unlabeled_data_4 + unlabeled_data_5 + unlabeled_data_6
+
+all_seqs = filter_sequences(all_seqs, monomer_dict)
 all_seqs = [seq for seq in all_seqs if len(seq) <= max_len]
 all_seqs = list(dict.fromkeys(all_seqs))
-all_seqs = [string.upper() for string in all_seqs]
-all_seqs_full = [
-    x for x in all_seqs if "B" not in x
-    and "X" not in x
-    and "Z" not in x
-    and "5" not in x
-    and "8" not in x
-    and "-" not in x
-    and " " not in x
-]
+all_seqs_full = all_seqs
 
 indices = len(all_seqs_full)
 indices = list(range(indices))
