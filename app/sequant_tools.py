@@ -1,4 +1,5 @@
-import random
+import os
+from dotenv import load_dotenv
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
@@ -13,6 +14,8 @@ from keras.models import Model
 from sklearn.preprocessing import MinMaxScaler
 
 from app.utils.conctants import monomer_smiles
+load_dotenv()
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 
 class SequantTools:
@@ -24,8 +27,8 @@ class SequantTools:
         self,
         sequences: list[str] = [],
         polymer_type: str = '',
+        encoding_strategy='',
         max_sequence_length: int = 96,
-        model_folder_path: str = '',
         normalize: bool = True,
         feature_range: tuple[int, int] = (-1, 1),
         add_peptide_descriptors: bool = False,
@@ -36,8 +39,8 @@ class SequantTools:
         Initialisation.
         :param sequences: Enumeration of sequences for filtering.
         :param polymer_type: Polymers types. Possible values: 'protein', 'DNA', 'RNA'.
+        :param encoding_strategy: Selects a model for encoding. Possible values: 'protein', 'aptamers', 'nucleic_acids'.
         :param max_sequence_length: The maximum number of characters in a sequence.
-        :param model_folder_path: Path to encoder model folder.
         :param normalize: Set to True to transform values with MinMaxScaler.
         :param feature_range: Desired range of transformed data.
         :param add_peptide_descriptors: Set to True to add peptide descriptors.
@@ -56,12 +59,12 @@ class SequantTools:
         self.sequences = sequences
         self.polymer_type = polymer_type
         self.max_length = max_sequence_length
-        self.model_folder_path = model_folder_path
         self.normalize = normalize
         self.feature_range = feature_range
         self.add_peptide_descriptors = add_peptide_descriptors
         self.new_monomers = new_monomers
         self.ignore_unknown_monomer = ignore_unknown_monomer
+        self.encoding_strategy = encoding_strategy
 
         self.monomer_smiles_info: dict[str, str] = monomer_smiles
         self.add_monomers()
@@ -170,6 +173,19 @@ class SequantTools:
         """
         Initialise model
         """
+        if self.encoding_strategy not in ['protein', 'aptamers', 'nucleic_acids']:
+            return ValueError(
+                "Incorrect type for encoding_strategy. Use one from the list: 'protein', 'aptamers', 'nucleic_acids'"
+            )
+        else:
+            match self.encoding_strategy:
+                case 'protein':
+                    self.model_folder_path = os.getenv('PROTEINS_PATH')
+                case 'aptamers':
+                    self.model_folder_path = os.getenv('APTAMERS_PATH')
+                case 'nucleic_acids':
+                    self.model_folder_path = os.getenv('NUCLEIC_ACIDS_PATH')
+
         trained_model = tf.keras.models.load_model(self.model_folder_path)
         layer_name = 'Latent'
         self.model = Model(
