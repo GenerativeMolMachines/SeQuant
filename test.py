@@ -2,7 +2,7 @@ import pandas as pd
 from app.sequant_tools import SequantTools
 
 
-max_peptide_length = 84
+max_peptide_length = 96
 polymer_type = 'DNA'
 seq_list = ['Atgcx', 'GC']
 seq_df = pd.DataFrame()
