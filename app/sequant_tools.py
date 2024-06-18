@@ -163,13 +163,12 @@ class SequantTools:
                 "Incorrect type for encoding_strategy. Use one from the list: 'protein', 'aptamers', 'nucleic_acids'"
             )
         else:
-            match self.encoding_strategy:
-                case 'protein':
-                    self.model_folder_path = os.getenv('PROTEINS_PATH')
-                case 'aptamers':
-                    self.model_folder_path = os.getenv('APTAMERS_PATH')
-                case 'nucleic_acids':
-                    self.model_folder_path = os.getenv('NUCLEIC_ACIDS_PATH')
+            if self.encoding_strategy == 'protein':
+                self.model_folder_path = os.getenv('PROTEINS_PATH')
+            if self.encoding_strategy == 'aptamers':
+                self.model_folder_path = os.getenv('APTAMERS_PATH')
+            if self.encoding_strategy == 'nucleic_acids':
+                self.model_folder_path = os.getenv('NUCLEIC_ACIDS_PATH')
 
         trained_model = tf.keras.models.load_model(self.model_folder_path)
         layer_name = 'Latent'
