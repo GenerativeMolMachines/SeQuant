@@ -13,7 +13,7 @@ import tensorflow as tf
 from keras.models import Model
 from sklearn.preprocessing import MinMaxScaler
 
-from app.utils.conctants import monomer_smiles
+from .utils.conctants import monomer_smiles
 load_dotenv()
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
