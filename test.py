@@ -12,6 +12,7 @@ sqt = SequantTools(
     polymer_type=polymer_type,
     max_sequence_length=max_peptide_length,
     encoding_strategy='aptamers',
+    add_peptide_descriptors=True,
     ignore_unknown_monomer=True
 )
 X_ref = sqt.generate_latent_representations()
