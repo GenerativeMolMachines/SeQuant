@@ -19,6 +19,8 @@ peptides = "^0.3.2"
 tqdm = "^4.66.1"
 lazypredict = "^0.2.12"
 python-dotenv = "^1.0.1"
+fastapi = "^0.112.0"
+numpy = "1.26.3"
 
 [build-system]
 requires = ["poetry-core"]

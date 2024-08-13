@@ -95,8 +95,9 @@ class SequantTools:
                 get_descriptors.ComputeProperties(molecule)
             ).reshape((-1, num_descriptors))
             descriptors_set = np.append(descriptors_set, descriptors, axis=0)
-
-        descriptors_set = MinMaxScaler(feature_range=(-1, 1)).fit_transform(descriptors_set)
+        scaler = MinMaxScaler(feature_range=(-1, 1))
+        scaler.fit(descriptors_set)
+        descriptors_set = scaler.transform(descriptors_set)
 
         self.descriptors = pd.DataFrame(
             descriptors_set,
