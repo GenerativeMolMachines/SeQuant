@@ -8,24 +8,30 @@ import requests
 from fastapi import FastAPI, Query, UploadFile, HTTPException
 from fastapi.responses import JSONResponse
 
-from .functions import (
-    define_peptide_generated_descriptors,
-    calculate_monomer
-)
+from .sequant_main import SeqQuantKernel
 
 
 app = FastAPI()
 
-@app.get("/peptide_descriptors")
+@app.get("/encode_sequence")
 def get_peptide_descriptors(
-        sequence: str = Query(default="")
+        sequences: str = Query(default=""),
+        polymer_type: str = 'protein',
+        encoding_strategy: str ='protein',
+        new_monomers: str = '',
+        skip_unprocessable: bool = True
 ):
-    return define_peptide_generated_descriptors(sequence)
-
-@app.get("/calculated_monomer")
-def get_calculated_monomer(
-        designation: str,
-        smiles: str,
-        polymer_type: str
-):
-    return calculate_monomer(designation, smiles, polymer_type)
+    print(sequences)
+    print(new_monomers)
+    if new_monomers != '':
+        new_monomers_dict = json.loads(new_monomers)
+    else:
+        new_monomers_dict = {}
+    print(new_monomers)
+    sequence_list = sequences.split(",")
+    sqk = SeqQuantKernel(
+        polymer_type=polymer_type,
+        encoding_strategy=encoding_strategy,
+        new_monomers=new_monomers_dict,
+    )
+    return sqk.generate_latent_representations(sequence_list, skip_unprocessable)

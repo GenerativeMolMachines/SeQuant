@@ -193,11 +193,11 @@ class SequantTools:
             monomer_params = tf.constant(
                 self.descriptors.loc[self.prefix + monomer],
                 dtype=tf.float32
-            )
+            ) # в одномерный эррей
             descriptors_array = tf.expand_dims(
                 monomer_params,
                 axis=0  # shape (1,rows)
-            )
+            ) # эррей.reshape(1, -1)
             sequence_matrix = tf.concat(
                 [sequence_matrix, descriptors_array],
                 axis=0
