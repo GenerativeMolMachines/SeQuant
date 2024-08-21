@@ -8,7 +8,7 @@ import requests
 from fastapi import FastAPI, Query, UploadFile, HTTPException
 from fastapi.responses import JSONResponse
 
-from .sequant_main import SeqQuantKernel
+from sequant_main import SeqQuantKernel
 
 
 app = FastAPI()
