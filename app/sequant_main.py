@@ -194,7 +194,6 @@ class SeqQuantKernel:
                 axis=0
             )
             container.append(seq_matrix)
-        print(container)
         return tf.concat(container, axis=0)
 
     def generate_latent_representations(

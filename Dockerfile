@@ -13,4 +13,4 @@ RUN pip3 install -r requirements.txt
 COPY . .
 
 WORKDIR app
-CMD uvicorn sequant_server:app --workers 1 --worker-class uvicorn.workers.UvicornWorker --bind=0.0.0.0:8000
+CMD gunicorn sequant_server:app --workers 1 --worker-class uvicorn.workers.UvicornWorker --bind=0.0.0.0:8000

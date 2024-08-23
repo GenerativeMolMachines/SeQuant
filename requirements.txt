@@ -84,3 +84,4 @@ websockets==12.0
 Werkzeug==3.0.3
 wrapt==1.16.0
 xgboost==2.0.3
+gunicorn==23.0.0

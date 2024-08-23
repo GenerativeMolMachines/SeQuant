@@ -21,13 +21,10 @@ def get_peptide_descriptors(
         new_monomers: str = '',
         skip_unprocessable: bool = True
 ):
-    print(sequences)
-    print(new_monomers)
     if new_monomers != '':
         new_monomers_dict = json.loads(new_monomers)
     else:
         new_monomers_dict = {}
-    print(new_monomers)
     sequence_list = sequences.split(",")
     sqk = SeqQuantKernel(
         polymer_type=polymer_type,
