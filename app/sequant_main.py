@@ -12,6 +12,7 @@ from rdkit.Chem import rdMolDescriptors
 
 import tensorflow as tf
 from keras.models import Model
+from sq_dataclasses import *
 
 load_dotenv()
 
@@ -25,7 +26,7 @@ class SeqQuantKernel:
         self,
         polymer_type: str = 'protein',
         encoding_strategy='protein',
-        new_monomers: dict[str, str] = {},
+        new_monomers: NewMonomers = None,
     ):
         """
         Initialisation.
@@ -103,10 +104,9 @@ class SeqQuantKernel:
 
     def add_monomer_to_descriptors(self):
         if self.new_monomers:
-            for designation in self.new_monomers:
-                if designation not in set(self.descriptors.keys()):
-                    smiles = self.new_monomers[designation]
-                    new_monomer = self.calculate_monomer(designation, smiles)
+            for designation in self.new_monomers.monomers:
+                if designation.name not in set(self.descriptors.keys()):
+                    new_monomer = self.calculate_monomer(designation.name, designation.smiles)
                     self.descriptors.update(new_monomer)
                 else:
                     error_text = f'Monomer "{designation}" is already exists in core.'
@@ -223,10 +223,11 @@ class SeqQuantKernel:
 
 
 if __name__ == "__main__":
+    new_mon = NewMonomers(monomers=[Monomer(name="XY", smiles="C(C(=O)O)N"),Monomer(name="T", smiles="C(C(=O)O)N")])
     sqt = SeqQuantKernel(
-        polymer_type='RNA',
-        encoding_strategy='nucleic_acids',
-        new_monomers={"X": "C(C(=O)O)N","T": "C(C(=O)O)N"}
+        polymer_type=PolymerType('protein'),
+        encoding_strategy=EncodingStrategy('protein'),
+        new_monomers=new_mon
     )
     seq_list = ['AtgcxAtgcxAtgcxAtgcxAtgcxAAtgcxAtgcxAtgcx', 'GC']
     result = sqt.generate_latent_representations(seq_list, True)
