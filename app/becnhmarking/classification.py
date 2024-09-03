@@ -1,4 +1,7 @@
 import pandas as pd
+
+import sys
+sys.path.insert(0, '/nfs/home/enam/SeQuant') 
 from app.utils.conctants import monomer_smiles
 from app.sequant_tools import SequantTools
 
@@ -10,6 +13,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
 from sklearn.model_selection import train_test_split
+print("imports done")
 
 random_state = 2024
 

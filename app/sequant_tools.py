@@ -250,7 +250,7 @@ class SequantTools:
     def generate_latent_representations(
             self,
             dataframe=True
-    ) -> np.ndarray | pd.DataFrame:
+    ):
         """
         Processes the sequences/descriptor tensor using a model.
         :return: Ready-made features.
