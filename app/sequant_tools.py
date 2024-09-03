@@ -81,7 +81,7 @@ class SequantTools:
             self
     ):
         """
-        Generates descriptors for monomers in dict[monomer_name, smiles] using rdkit.
+        Generates descriptors for monomers in dict[monomer_name, smiles] using rdkit and DFT data.
         """
         self.descriptor_names = list(Chem.rdMolDescriptors.Properties.GetAvailableProperties())
         num_descriptors: int = len(self.descriptor_names)
@@ -98,11 +98,25 @@ class SequantTools:
 
         descriptors_set = MinMaxScaler(feature_range=(-1, 1)).fit_transform(descriptors_set)
 
-        self.descriptors = pd.DataFrame(
+        descriptors_rdkit = pd.DataFrame(
             descriptors_set,
             columns=self.descriptor_names,
             index=list(self.monomer_smiles_info.keys())
         )
+
+        energy_data = pd.read_csv('data/energy_data.csv')
+        energy_set = energy_data.set_index("Aminoacid").iloc[:, :]
+
+        energy_names = energy_set.columns
+
+        scaled_energy = MinMaxScaler(feature_range=(-1, 1)).fit_transform(energy_set)
+        scaled_energy_set = pd.DataFrame(
+            scaled_energy,
+            columns=energy_names,
+            index=list(self.monomer_smiles_info.keys())
+        )
+
+        self.descriptors = pd.concat([descriptors_rdkit, scaled_energy_set], axis=1)
 
     def filter_sequences(
             self
