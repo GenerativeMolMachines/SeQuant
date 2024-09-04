@@ -104,7 +104,7 @@ class SequantTools:
             index=list(self.monomer_smiles_info.keys())
         )
 
-        energy_data = pd.read_csv('data/energy_data.csv')
+        energy_data = pd.read_csv('/nfs/home/enam/SeQuant/app/utils/data/energy_data.csv')
         energy_set = energy_data.set_index("Aminoacid").iloc[:, :]
 
         energy_names = energy_set.columns

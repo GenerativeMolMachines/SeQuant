@@ -18,16 +18,16 @@ print("imports done")
 random_state = 2024
 
 # Data import
-hemo_neg_df = pd.read_csv('../utils/data/hemo_neg.csv')
+hemo_neg_df = pd.read_csv('/nfs/home/enam/SeQuant/app/utils/data/hemo_neg.csv')
 hemo_neg_df['label'] = 0
 
-hemo_pos_df = pd.read_csv('../utils/data/hemo_pos.csv')
+hemo_pos_df = pd.read_csv('/nfs/home/enam/SeQuant/app/utils/data/hemo_pos.csv')
 hemo_pos_df['label'] = 1
 
-nf_neg_df = pd.read_csv('../utils/data/nf_neg.csv')
+nf_neg_df = pd.read_csv('/nfs/home/enam/SeQuant/app/utils/data/nf_neg.csv')
 nf_neg_df['label'] = 0
 
-nf_pos_df = pd.read_csv('../utils/data/nf_pos.csv')
+nf_pos_df = pd.read_csv('/nfs/home/enam/SeQuant/app/utils/data/nf_pos.csv')
 nf_pos_df['label'] = 1
 
 # Data preprocessing
