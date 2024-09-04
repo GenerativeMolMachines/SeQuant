@@ -37,6 +37,9 @@ nf_df = pd.concat([nf_neg_df, nf_pos_df], ignore_index=True)
 hemo_df = hemo_df.sample(frac=1, random_state=random_state).reset_index(drop=True)
 nf_df = nf_df.sample(frac=1, random_state=random_state).reset_index(drop=True)
 
+print("Data has been imported")
+print("\n")
+
 
 def data_filtration(data):
     # Filtration based on max length = 96
@@ -78,6 +81,9 @@ sqt_nf = SequantTools(
 
 descriptors_nf = sqt_nf.generate_latent_representations()
 
+print("Descriptors have been received")
+print("\n")
+
 # Predictions
 targets_hemo = hemo_df_filtred['label']
 targets_nf = nf_df_filtred['label']
@@ -92,6 +98,9 @@ X_train_val_nf, X_test_nf, y_train_val_nf, y_test_nf = train_test_split(
     descriptors_nf, targets_nf, test_size=0.1, stratify=targets_nf, random_state=random_state)
 X_train_nf, X_val_nf, y_train_nf, y_val_nf = train_test_split(
     X_train_val_nf, y_train_val_nf, test_size=0.1, stratify=y_train_val_nf, random_state=random_state)
+
+print("Sets have been split")
+print("\n")
 
 # Models' list
 models = {
@@ -171,6 +180,9 @@ def evaluate_model(model, X_train, X_test, y_train, y_test):
     }
 
 
+print('Optimization of HEMO dataset started')
+print("\n")
+
 # Optimization with grid search on hemo dataset
 results_hemo = {}
 best_models_hemo = {}
@@ -187,6 +199,8 @@ for name, metrics in results_hemo.items():
             print(f"{metric_name}: {value}")
     print("\n")
 
+print('Evaluation of HEMO ds')
+print("\n")
 # Final evaluation on test set using the best models
 final_results_hemo = {}
 for name, model in best_models_hemo.items():
@@ -202,6 +216,8 @@ for name, metrics in final_results_hemo.items():
             print(f"{metric_name}: {value:.4f}")
     print("\n")
 
+print('Optimization of NF ds')
+print("\n")
 # Optimization with grid search on nonfouling dataset
 results_nf = {}
 best_models_nf = {}
@@ -218,6 +234,8 @@ for name, metrics in results_nf.items():
             print(f"{metric_name}: {value}")
     print("\n")
 
+print('Evaluation of NF ds')
+print("\n")
 # Final evaluation on test set using the best models
 final_results_nf = {}
 for name, model in best_models_nf.items():
