@@ -108,7 +108,7 @@ class SequantTools:
         energy_data = pd.read_csv('/nfs/home/enam/SeQuant/app/utils/data/energy_data.csv')
         energy_set = energy_data.set_index("Aminoacid").iloc[:, :]
 
-        self.energy_names = energy_set.columns
+        self.energy_names = list(energy_set.columns)
 
         scaled_energy = MinMaxScaler(feature_range=(-1, 1)).fit_transform(energy_set)
         scaled_energy_set = pd.DataFrame(
