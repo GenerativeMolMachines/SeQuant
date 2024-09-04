@@ -57,6 +57,7 @@ class SequantTools:
         self.peptide_descriptors: npt.NDArray = []
         self.latent_representation: npt.NDArray = []
         self.descriptor_names: list[str] = []
+        self.energy_names: list[str] = []
 
         self.sequences = sequences
         self.polymer_type = polymer_type
@@ -107,12 +108,12 @@ class SequantTools:
         energy_data = pd.read_csv('/nfs/home/enam/SeQuant/app/utils/data/energy_data.csv')
         energy_set = energy_data.set_index("Aminoacid").iloc[:, :]
 
-        energy_names = energy_set.columns
+        self.energy_names = energy_set.columns
 
         scaled_energy = MinMaxScaler(feature_range=(-1, 1)).fit_transform(energy_set)
         scaled_energy_set = pd.DataFrame(
             scaled_energy,
-            columns=energy_names,
+            columns=self.energy_names,
             index=list(self.monomer_smiles_info.keys())
         )
 
@@ -268,7 +269,9 @@ class SequantTools:
             )
 
         if dataframe:
-            descriptor_names_repl = [i + '_repr' for i in self.descriptor_names + self.peptide_descriptor_names]
+            descriptor_names_repl = [
+                i + '_repr' for i in self.descriptor_names + self.peptide_descriptor_names + self.energy_names
+            ]
             self.latent_representation_df = pd.DataFrame(
                 self.latent_representation,
                 columns=descriptor_names_repl,
