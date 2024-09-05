@@ -28,6 +28,8 @@ hemo_pos_df['label'] = 1
 hemo_df = pd.concat([hemo_neg_df, hemo_pos_df], ignore_index=True)
 hemo_df = hemo_df.sample(frac=1, random_state=random_state).reset_index(drop=True)
 
+hemo_df = hemo_df.iloc[:, :500]
+
 print("Data has been imported")
 print("\n")
 
