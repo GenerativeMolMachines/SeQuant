@@ -7,6 +7,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.svm import SVC
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.preprocessing import MinMaxScaler
 
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
 from sklearn.model_selection import train_test_split
@@ -26,7 +27,9 @@ print("\n")
 
 # Predictions
 targets_nf = nf_df['label']
-descriptor_nf = nf_df.drop(columns=['seq', 'label'])
+descriptors_nf = nf_df.drop(columns=['seq', 'label'])
+scaler = MinMaxScaler()
+descriptor_nf = scaler.fit_transform(descriptors_nf)
 print('Descriptors have been read')
 print("\n")
 
