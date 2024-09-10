@@ -18,7 +18,7 @@ from scipy.stats import spearmanr
 print("imports done")
 
 # Data import
-stability_train_df = pd.read_csv('/nfs/home/enam/SeQuant/app/utils/data/stability_train.csv')
+stability_train_df = pd.read_csv('/nfs/home/enam/SeQuant/ap/utils/data/stability_train.csv')
 stability_test_df = pd.read_csv('/nfs/home/enam/SeQuant/app/utils/data/stability_test.csv')
 
 
