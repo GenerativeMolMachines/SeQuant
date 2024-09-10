@@ -18,10 +18,10 @@ from scipy.stats import spearmanr
 print("imports done")
 
 # Data import
-stability_train_label = pd.read_csv('/nfs/home/enam/SeQuant/ap/utils/data/stability_train.csv') # seqs and labels
+stability_train_label = pd.read_csv('/nfs/home/enam/SeQuant/app/utils/data/stability_train.csv') # seqs and labels
 stability_test_label = pd.read_csv('/nfs/home/enam/SeQuant/app/utils/data/stability_test.csv') # seqs and labels
 
-stability_train_descriptors = pd.read_csv('/nfs/home/enam/SeQuant/ap/utils/data/stability_train_pbm.csv') # seqs and labels
+stability_train_descriptors = pd.read_csv('/nfs/home/enam/SeQuant/app/utils/data/stability_train_pbm.csv') # seqs and labels
 stability_test_descriptors = pd.read_csv('/nfs/home/enam/SeQuant/app/utils/data/stability_test_pbm.csv') # seqs and labels
 
 # Filtration based on max length = 96
