@@ -42,7 +42,7 @@ print("Data has been imported")
 print("\n")
 
 # Predictions
-scaler = MinMaxScaler()
+scaler = MinMaxScaler(feature_range=(-1, 1))
 
 targets_hemo = hemo_df['label']
 descriptors_hemo = hemo_df.drop(columns=['seq', 'label'])

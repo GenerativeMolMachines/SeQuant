@@ -28,7 +28,7 @@ print("\n")
 # Predictions
 targets_nf = nf_df['label']
 descriptors_nf = nf_df.drop(columns=['seq', 'label'])
-scaler = MinMaxScaler()
+scaler = MinMaxScaler(feature_range=(-1, 1))
 descriptor_nf = scaler.fit_transform(descriptors_nf)
 print('Descriptors have been read')
 print("\n")

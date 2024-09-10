@@ -6,6 +6,7 @@ sys.path.insert(0, '/nfs/home/enam/SeQuant')
 from app.utils.conctants import monomer_smiles
 from app.sequant_tools import SequantTools
 
+from sklearn.preprocessing import MinMaxScaler
 from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.ensemble import GradientBoostingRegressor
@@ -36,6 +37,8 @@ filtered_test_df = stability_test_df_preprocessed[~stability_test_df_preprocesse
 )]
 
 # Retrieving descriptors by using SeQuant
+scaler = MinMaxScaler(feature_range=(-1, 1))
+
 sequences_train = stability_train_df['seq']
 sequences_test = stability_test_df['seq']
 max_peptide_length = 96
@@ -49,6 +52,7 @@ sqt_train = SequantTools(
 )
 
 descriptors_train = sqt_train.generate_latent_representations()
+descriptors_train = scaler.fit_transform(descriptors_train)
 
 sqt_test = SequantTools(
     sequences=sequences_test,
@@ -58,6 +62,7 @@ sqt_test = SequantTools(
 )
 
 descriptors_test = sqt_test.generate_latent_representations()
+descriptors_test = scaler.fit_transform(descriptors_test)
 
 # Predictions
 targets_train = filtered_train_df['label']
