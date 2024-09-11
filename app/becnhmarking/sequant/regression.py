@@ -7,11 +7,10 @@ from app.utils.conctants import monomer_smiles
 from app.sequant_tools import SequantTools
 
 from sklearn.preprocessing import MinMaxScaler
-from sklearn.linear_model import LinearRegression
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.ensemble import GradientBoostingRegressor
-from sklearn.svm import SVR
-from sklearn.neighbors import KNeighborsRegressor
+
+from xgboost import XGBRegressor
+from lightgbm import LGBMRegressor
+from catboost import CatBoostRegressor
 
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from scipy.stats import spearmanr
@@ -74,11 +73,9 @@ X_train, X_test, y_train, y_test = (
 
 # Models' list
 models = {
-    'LinearRegression': LinearRegression(),
-    'RandomForestRegressor': RandomForestRegressor(),
-    'GradientBoostingRegressor': GradientBoostingRegressor(),
-    'SVR': SVR(),
-    'KNeighborsRegressor': KNeighborsRegressor()
+    'XGB': XGBRegressor(),
+    'LightGBM': LGBMRegressor(),
+    'CatBoost': CatBoostRegressor(),
 }
 
 

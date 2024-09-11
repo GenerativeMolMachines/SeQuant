@@ -3,10 +3,10 @@ import pandas as pd
 import sys
 sys.path.insert(0, '/nfs/home/enam/SeQuant')
 
-from sklearn.linear_model import LogisticRegression
-from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
-from sklearn.svm import SVC
-from sklearn.neighbors import KNeighborsClassifier
+from xgboost import XGBClassifier
+from lightgbm import LGBMClassifier
+from catboost import CatBoostClassifier
+
 from sklearn.preprocessing import MinMaxScaler
 
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
@@ -65,11 +65,9 @@ print("\n")
 
 # Models' list
 models = {
-    'LogisticRegression': LogisticRegression(),
-    'RandomForestClassifier': RandomForestClassifier(),
-    'GradientBoostingClassifier': GradientBoostingClassifier(),
-    'SVC': SVC(probability=True),
-    'KNeighborsClassifier': KNeighborsClassifier()
+    'XGB': XGBClassifier(),
+    'LightGBM': LGBMClassifier(),
+    'CatBoost': CatBoostClassifier(),
 }
 
 
