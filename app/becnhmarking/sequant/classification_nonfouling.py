@@ -16,7 +16,7 @@ print("imports done")
 random_state = 2024
 
 # Data import
-nf_label = pd.read_csv('/nfs/home/enam/SeQuant/app/utils/data/nf_df.csv') # seqs and labels
+nf_label = pd.read_csv('/nfs/home/enam/SeQuant/app/utils/data/nf_df_cut.csv') # seqs and labels
 nf_descriptors = pd.read_csv('/nfs/home/enam/SeQuant/app/utils/data/nf_df_encoding.csv') # seqs and descriptors
 
 # Data preprocessing

@@ -16,7 +16,7 @@ print("imports done")
 random_state = 2024
 
 # Data import
-hemo_label = pd.read_csv('/nfs/home/enam/SeQuant/app/utils/data/hemo_df.csv') # seqs and labels
+hemo_label = pd.read_csv('/nfs/home/enam/SeQuant/app/utils/data/hemo_df_cut.csv') # seqs and labels
 hemo_descriptors = pd.read_csv('/nfs/home/enam/SeQuant/app/utils/data/hemo_df_encoding.csv') # seqs and descriptors
 
 # Data preprocessing
