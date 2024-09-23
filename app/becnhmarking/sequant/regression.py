@@ -15,6 +15,9 @@ from catboost import CatBoostRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from scipy.stats import spearmanr
 
+import matplotlib.pyplot as plt
+import seaborn as sns
+
 print("imports done")
 
 # Data import
@@ -79,15 +82,41 @@ models = {
 }
 
 
+def plot_predictions(y_true, y_pred, title='Predictions vs True Values'):
+    plt.figure(figsize=(10, 6))
+    plt.scatter(y_true, y_pred, alpha=0.5)
+    plt.plot([y_true.min(), y_true.max()], [y_true.min(), y_true.max()], 'k--', lw=2)
+    plt.xlabel('True Values')
+    plt.ylabel('Predictions')
+    plt.title(title)
+    plt.show()
+
+
+def plot_distribution(y_true, y_pred, title='Distribution of Predictions and True Values'):
+    plt.figure(figsize=(10, 6))
+    sns.histplot(y_true, color='blue', label='True Values', kde=True, stat="density", linewidth=0)
+    sns.histplot(y_pred, color='red', label='Predictions', kde=True, stat="density", linewidth=0)
+    plt.title(title)
+    plt.legend()
+    plt.show()
+
+
 def evaluate_model(model, X_train, X_test, y_train, y_test):
     model.fit(X_train, y_train)
-    predictions = model.predict(X_test)
+    predictions_train = model.predict(X_train)
+    predictions_test = model.predict(X_test)
 
-    mae = mean_absolute_error(y_test, predictions)
-    mse = mean_squared_error(y_test, predictions)
+    mae = mean_absolute_error(y_test, predictions_test)
+    mse = mean_squared_error(y_test, predictions_test)
     rmse = np.sqrt(mse)
-    r2 = r2_score(y_test, predictions)
-    spearman_corr, _ = spearmanr(y_test, predictions)
+    r2 = r2_score(y_test, predictions_test)
+    spearman_corr, _ = spearmanr(y_test, predictions_test)
+
+    plot_predictions(y_train, predictions_train, title='Train Predictions vs True Values')
+    plot_distribution(y_train, predictions_train, title='Train Distribution of Predictions and True Values')
+
+    plot_predictions(y_test, predictions_test, title='Test Predictions vs True Values')
+    plot_distribution(y_test, predictions_test, title='Test Distribution of Predictions and True Values')
 
     return {
         'MAE': mae,
