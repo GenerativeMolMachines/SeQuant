@@ -20,3 +20,11 @@ class Monomer(BaseModel):
 
 class NewMonomers(BaseModel):
     monomers: List[Monomer]
+
+
+class SeqQuantKernelModel(BaseModel):
+    max_sequence_length: int
+    num_of_descriptors: int
+    known_monomers: set[str]
+    polymer_type: PolymerType
+

@@ -1,11 +1,13 @@
 import os
+
+from fastapi import HTTPException
+
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 from dotenv import load_dotenv
 import json
 import numpy as np
 import joblib
-import pandas as pd
 
 from rdkit import Chem
 from rdkit.Chem import rdMolDescriptors
@@ -25,22 +27,17 @@ class SeqQuantKernel:
     def __init__(
         self,
         polymer_type: str = 'protein',
-        encoding_strategy='protein',
         new_monomers: NewMonomers = None,
     ):
         """
         Initialisation.
         :param polymer_type: Polymers types. Possible values: 'protein', 'DNA', 'RNA'.
-        :param encoding_strategy: Selects a model for encoding. Possible values: 'protein', 'aptamers', 'nucleic_acids'.
         :param skip_unprocessable: Set to True to skip sequences with unknown monomers and sequences with length >96.
         :param new_monomers: list of dicts with new monomers: {'name':'str', 'class':'protein/DNA/RNA', 'smiles':'str'}
         """
         self.max_sequence_length: int = 96
         self.num_of_descriptors = 43
         self.descriptors_scaler = joblib.load(os.getenv('DESCRIPTORS_SCALER_PATH'))
-
-        self.encoding_strategy = encoding_strategy
-        self.model = self.load_model()
 
         self.polymer_type = polymer_type
         self.descriptors: dict[str, list[float]] = {}
@@ -53,12 +50,7 @@ class SeqQuantKernel:
         """
         Formalizes the descriptors_file_path depending on the polymer type.
         """
-        if self.polymer_type not in ['protein', 'DNA', 'RNA']:
-            return ValueError(
-                "Incorrect polymer_type. "
-                "Use one from the list: 'protein', 'DNA', 'RNA'"
-            )
-        elif self.polymer_type == 'protein':
+        if self.polymer_type == 'protein':
             descriptors_file_path = os.getenv('PROTEINS_DESCRIPTORS_PATH')
         elif self.polymer_type == 'DNA':
             descriptors_file_path = os.getenv('DNA_DESCRIPTORS_PATH')
@@ -67,19 +59,14 @@ class SeqQuantKernel:
         with open(descriptors_file_path) as json_file:
             self.descriptors = json.load(json_file)
 
-    def load_model(self):
-        if self.encoding_strategy not in ['protein', 'aptamers', 'nucleic_acids']:
-            return ValueError(
-                "Incorrect type for encoding_strategy. "
-                "Use one from the list: 'protein', 'aptamers', 'nucleic_acids'"
-            )
-        else:
-            if self.encoding_strategy == 'protein':
-                model_folder_path = os.getenv('PROTEINS_PATH')
-            if self.encoding_strategy == 'aptamers':
-                model_folder_path = os.getenv('APTAMERS_PATH')
-            if self.encoding_strategy == 'nucleic_acids':
-                model_folder_path = os.getenv('NUCLEIC_ACIDS_PATH')
+    @staticmethod
+    def load_model(encoding_strategy):
+        if encoding_strategy == 'protein':
+            model_folder_path = os.getenv('PROTEINS_PATH')
+        elif encoding_strategy == 'aptamers':
+            model_folder_path = os.getenv('APTAMERS_PATH')
+        elif encoding_strategy == 'nucleic_acids':
+            model_folder_path = os.getenv('NUCLEIC_ACIDS_PATH')
 
         trained_model = tf.keras.models.load_model(model_folder_path)
         return Model(
@@ -109,8 +96,8 @@ class SeqQuantKernel:
                     new_monomer = self.calculate_monomer(designation.name, designation.smiles)
                     self.descriptors.update(new_monomer)
                 else:
-                    error_text = f'Monomer "{designation}" is already exists in core.'
-                    raise RuntimeError(error_text)
+                    error_text = f'Monomer {designation} is already exists in core.'
+                    raise HTTPException(status_code=422, detail=error_text)
 
     def length_filter(self, sequence_list, skip_unprocessable):
         processed_sequence_list: list[str] = []
@@ -120,7 +107,7 @@ class SeqQuantKernel:
                     error_text = 'There are the sequence whose length ' \
                                  f'exceeds the maximum = {self.max_sequence_length}: {sequence} ' \
                                  'Set skip_unprocessable as True in kernel or exclude if by yourself.'
-                    raise RuntimeError(error_text)
+                    raise HTTPException(status_code=422, detail=error_text)
                 else:
                     continue
             else:
@@ -137,7 +124,7 @@ class SeqQuantKernel:
                                 '1) adding new monomer in kernel;\n' \
                                 '2) setting skip_unprocessable as True;\n' \
                                 '3) excluding it by yourself.'
-                    raise RuntimeError(error_text)
+                    raise HTTPException(status_code=422, detail=error_text)
                 else:
                     continue
             else:
@@ -199,22 +186,24 @@ class SeqQuantKernel:
     def generate_latent_representations(
             self,
             sequence_list,
-            skip_unprocessable
+            skip_unprocessable,
+            encoding_strategy='protein'
     ) -> dict:
         """
         Processes the sequences/descriptor tensor using a model.
         :param sequence_list: Enumeration of sequences for filtering.
         :param skip_unprocessable: Set to True to skip sequences with unknown monomers and sequences with length >96.
+        :param encoding_strategy: Selects a model for encoding. Possible values: 'protein', 'aptamers', 'nucleic_acids'.
         :return: Ready-made features.
         """
         result:dict[str, list[float]] = {}
         sequence_list_filter1 = self.length_filter(sequence_list, skip_unprocessable)
         sequence_list_filter2 = self.unknown_monomer_filter(sequence_list_filter1, skip_unprocessable)
-        print(sequence_list_filter2)
         if not sequence_list_filter2:
             return {}
         encoded_sequence_list = self.encoding(sequence_list_filter2)
-        latent_representation: np.ndarray = self.model.predict(
+        model = self.load_model(encoding_strategy)
+        latent_representation: np.ndarray = model.predict(
             encoded_sequence_list
         )
         for sequence, descriptors in zip(sequence_list_filter2, latent_representation):
@@ -223,12 +212,11 @@ class SeqQuantKernel:
 
 
 if __name__ == "__main__":
-    new_mon = NewMonomers(monomers=[Monomer(name="XY", smiles="C(C(=O)O)N"),Monomer(name="T", smiles="C(C(=O)O)N")])
+    new_mon = NewMonomers(monomers=[Monomer(name="X", smiles="C(C(=O)O)N")])
     sqt = SeqQuantKernel(
         polymer_type=PolymerType('protein'),
-        encoding_strategy=EncodingStrategy('protein'),
         new_monomers=new_mon
     )
     seq_list = ['AtgcxAtgcxAtgcxAtgcxAtgcxAAtgcxAtgcxAtgcx', 'GC']
-    result = sqt.generate_latent_representations(seq_list, True)
+    result = sqt.generate_latent_representations(seq_list, True, encoding_strategy=EncodingStrategy('aptamers'))
     print(result)
