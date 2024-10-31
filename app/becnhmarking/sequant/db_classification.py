@@ -10,10 +10,11 @@ from app.sequant_tools import SequantTools
 from xgboost import XGBClassifier
 from lightgbm import LGBMClassifier
 from catboost import CatBoostClassifier
+from sklearn.ensemble import RandomForestClassifier
 
 from sklearn.preprocessing import MinMaxScaler
 
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, matthews_corrcoef
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, matthews_corrcoef, confusion_matrix
 from sklearn.model_selection import train_test_split
 print("imports done")
 
@@ -61,73 +62,9 @@ print("\n")
 models = {
     'XGB': XGBClassifier(),
     'LightGBM': LGBMClassifier(),
-    'CatBoost': CatBoostClassifier(verbose=False)
+    'CatBoost': CatBoostClassifier(verbose=False),
+    'RandomForest': RandomForestClassifier()
 }
-
-"""
-def custom_train_test_split(descriptors, labels, test_size=0.2, random_state=None):
-    # split data indices on positive and negative classes
-    positive_indices = np.where(labels == 1)[0]
-    negative_indices = np.where(labels == 0)[0]
-
-    # split each class on train and test sets
-    pos_train_indices, pos_test_indices = train_test_split(
-        positive_indices, test_size=test_size, random_state=random_state)
-    neg_train_indices, neg_test_indices = train_test_split(
-        negative_indices, test_size=test_size, random_state=random_state)
-
-    # concatenate pos and neg indices
-    train_indices = np.concatenate([pos_train_indices, neg_train_indices])
-    test_indices = np.concatenate([pos_test_indices, neg_test_indices])
-
-    # shuffle indices
-    np.random.seed(random_state)
-    np.random.shuffle(train_indices)
-    np.random.shuffle(test_indices)
-
-    # form final train and test sets
-    X_train = descriptors.iloc[train_indices]
-    X_test = descriptors.iloc[test_indices]
-    y_train = labels.iloc[train_indices]
-    y_test = labels.iloc[test_indices]
-
-    return X_train, X_test, y_train, y_test
-"""
-
-
-def custom_train_test_split(descriptors, labels, test_size=0.2, random_state=None):
-    # Set random seed
-    np.random.seed(random_state)
-
-    # split each class on train and test sets
-    positive_indices = np.where(labels == 1)[0]
-    negative_indices = np.where(labels == 0)[0]
-
-    # Determine test examples of positive and negative in test
-    num_pos_test = int(len(positive_indices) * test_size)
-    num_neg_test = int(len(negative_indices) * test_size)
-
-    # Choose indices for test
-    pos_test_indices = np.random.choice(positive_indices, size=num_pos_test, replace=False)
-    neg_test_indices = np.random.choice(negative_indices, size=num_neg_test, replace=False)
-
-    # Determine train indices as remain
-    pos_train_indices = np.setdiff1d(positive_indices, pos_test_indices)
-    neg_train_indices = np.setdiff1d(negative_indices, neg_test_indices)
-
-    train_indices = np.concatenate([pos_train_indices, neg_train_indices])
-    test_indices = np.concatenate([pos_test_indices, neg_test_indices])
-
-    np.random.shuffle(train_indices)
-    np.random.shuffle(test_indices)
-
-    # Form final sets
-    X_train = descriptors.iloc[train_indices]
-    X_test = descriptors.iloc[test_indices]
-    y_train = labels.iloc[train_indices]
-    y_test = labels.iloc[test_indices]
-
-    return X_train, X_test, y_train, y_test
 
 
 def evaluate_model(model, functions, dataset):
@@ -141,7 +78,7 @@ def evaluate_model(model, functions, dataset):
         descriptors = dataset.drop(columns=['Sequence', 'Function', 'Class'])
 
         # Training
-        X_train, X_test, y_train, y_test = custom_train_test_split(descriptors, labels, test_size=0.3, random_state=42)
+        X_train, X_test, y_train, y_test = train_test_split(descriptors, labels, stratify=labels, test_size=0.3, random_state=42)
 
         if len(set(y_test)) < 2:
             print(f"Skipping function {function} due to insufficient class diversity in test set.")
