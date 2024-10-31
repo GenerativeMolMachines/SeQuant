@@ -94,6 +94,7 @@ def evaluate_model(model, functions, dataset):
         f1 = f1_score(y_test, predictions)
         roc_auc = roc_auc_score(y_test, probabilities) if probabilities is not None else None
         mcc = matthews_corrcoef(y_test, predictions)
+        conf_matrix = confusion_matrix(y_test, predictions)
 
         results = {
             'Accuracy': accuracy,
@@ -101,7 +102,8 @@ def evaluate_model(model, functions, dataset):
             'Recall': recall,
             'F1 Score': f1,
             'ROC AUC': roc_auc,
-            'MCC': mcc
+            'MCC': mcc,
+            'Confusion Matrix': conf_matrix
         }
         results_dict[function] = results
         print(f"Model evaluated for function {function}")
@@ -123,6 +125,9 @@ for name, predictions in final_results.items():
         print(f"Results for {function}")
         for metric_name, value in results.items():
             if value is not None:
-                print(f"{metric_name}: {value:.4f}")
+                if metric_name == 'Confusion Matrix':
+                    print(f"{metric_name}:n{value}")
+                else:
+                    print(f"{metric_name}: {value:.3f}")
         print("\n")
     print("\n")
