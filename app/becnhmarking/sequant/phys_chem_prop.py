@@ -9,7 +9,7 @@ from app.sequant_tools import SequantTools
 
 from peptides import Peptide
 
-from sklearn.linear_model import LogisticRegression
+from sklearn.linear_model import LinearRegression
 from sklearn.svm import SVR
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.ensemble import RandomForestRegressor
@@ -102,7 +102,7 @@ os.makedirs('models', exist_ok=True)
 
 # List of models and their short names for use in file names
 models = {
-    'LogisticRegression': LogisticRegression(),
+    'LinearRegression': LinearRegression(),
     'SVR': SVR(),
     'KNN': KNeighborsRegressor(),
     'RandomForest': RandomForestRegressor()
