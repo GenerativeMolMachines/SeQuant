@@ -120,14 +120,16 @@ properties = [
 # For storing metrics
 metrics_list = []
 
-# Iterate over models and properties
 for model_name, model in models.items():
     for prop in properties:
         # Train the model
         model.fit(result_train.drop(columns=properties), result_train[prop])
 
+        # Create a copy of the test set without the prediction columns
+        test_features = result_test.drop(columns=properties).copy()
+
         # Predict on the test set
-        predictions = model.predict(result_test.drop(columns=properties))
+        predictions = model.predict(test_features)
 
         # Save the model
         model_filename = f'models/{model_name}_{prop.replace(" ", "_")}.pkl'
@@ -151,7 +153,6 @@ for model_name, model in models.items():
             'RMSE': rmse,
             'R2': r2
         })
-
         print(f'Property {prop} for model {model_name} has been predicted')
     print(f'Evaluation of model {model_name} is finished')
 
