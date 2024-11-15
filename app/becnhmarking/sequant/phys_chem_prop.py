@@ -77,11 +77,11 @@ print(test)
 def compute_properties(sequence):
     peptide = Peptide(sequence)
     return {
-        "Aliphatic Index": peptide.aliphatic_index(),
-        "Instability Index": peptide.instability_index(),
-        "Theoretical Net Charge": peptide.charge(),
-        "Isoelectric Point": peptide.isoelectric_point(),
-        "Molecular Weight": peptide.molecular_weight()
+        "Aliphatic_Index": peptide.aliphatic_index(),
+        "Instability_Index": peptide.instability_index(),
+        "Theoretical_Net_Charge": peptide.charge(),
+        "Isoelectric_Point": peptide.isoelectric_point(),
+        "Molecular_Weight": peptide.molecular_weight()
     }
 
 
@@ -110,23 +110,23 @@ models = {
 
 # List of properties to predict
 properties = [
-    "Aliphatic Index",
-    "Instability Index",
-    "Theoretical Net Charge",
-    "Isoelectric Point",
-    "Molecular Weight"
+    "Aliphatic_Index",
+    "Instability_Index",
+    "Theoretical_Net_Charge",
+    "Isoelectric_Point",
+    "Molecular_Weight"
 ]
 
 # For storing metrics
 metrics_list = []
 
+# Create a copy of the test set without the prediction columns
+test_features = result_test.drop(columns=properties).copy()
+
 for model_name, model in models.items():
     for prop in properties:
         # Train the model
         model.fit(result_train.drop(columns=properties), result_train[prop])
-
-        # Create a copy of the test set without the prediction columns
-        test_features = result_test.drop(columns=properties).copy()
 
         # Predict on the test set
         predictions = model.predict(test_features)
