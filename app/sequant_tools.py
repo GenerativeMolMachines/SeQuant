@@ -57,6 +57,7 @@ class SequantTools:
         self.peptide_descriptors: npt.NDArray = []
         self.latent_representation: npt.NDArray = []
         self.descriptor_names: list[str] = []
+        self.energy_names: list[str] = []
 
         self.sequences = sequences
         self.polymer_type = polymer_type
@@ -81,7 +82,7 @@ class SequantTools:
             self
     ):
         """
-        Generates descriptors for monomers in dict[monomer_name, smiles] using rdkit.
+        Generates descriptors for monomers in dict[monomer_name, smiles] using rdkit and DFT data.
         """
         self.descriptor_names = list(Chem.rdMolDescriptors.Properties.GetAvailableProperties())
         num_descriptors: int = len(self.descriptor_names)
@@ -98,11 +99,25 @@ class SequantTools:
 
         descriptors_set = MinMaxScaler(feature_range=(-1, 1)).fit_transform(descriptors_set)
 
-        self.descriptors = pd.DataFrame(
+        descriptors_rdkit = pd.DataFrame(
             descriptors_set,
             columns=self.descriptor_names,
             index=list(self.monomer_smiles_info.keys())
         )
+
+        energy_data = pd.read_csv('app/utils/data/energy_data.csv')
+        energy_set = energy_data.set_index("Aminoacid").iloc[:, :]
+
+        self.energy_names = list(energy_set.columns)
+
+        scaled_energy = MinMaxScaler(feature_range=(-1, 1)).fit_transform(energy_set)
+        scaled_energy_set = pd.DataFrame(
+            scaled_energy,
+            columns=self.energy_names,
+            index=list(self.monomer_smiles_info.keys())
+        )
+
+        self.descriptors = pd.concat([descriptors_rdkit, scaled_energy_set], axis=1)
 
     def filter_sequences(
             self
@@ -236,7 +251,7 @@ class SequantTools:
     def generate_latent_representations(
             self,
             dataframe=True
-    ) -> np.ndarray | pd.DataFrame:
+    ):
         """
         Processes the sequences/descriptor tensor using a model.
         :return: Ready-made features.
@@ -254,7 +269,9 @@ class SequantTools:
             )
 
         if dataframe:
-            descriptor_names_repl = [i + '_repr' for i in self.descriptor_names + self.peptide_descriptor_names]
+            descriptor_names_repl = [
+                i + '_repr' for i in self.descriptor_names + self.peptide_descriptor_names + self.energy_names
+            ]
             self.latent_representation_df = pd.DataFrame(
                 self.latent_representation,
                 columns=descriptor_names_repl,

@@ -1,14 +1,14 @@
 # SeQuant
-Пакет для генерации дескрипторов с помощью rdkit и авторской нейронной сети
+Package for generating embeddings using the author's neural network.
 
-## сборка и запуск
-Установка pyenv и poetry - https://habr.com/ru/articles/599441/ .
+## Setup
+Installing pyenv and poetry - https://habr.com/ru/articles/599441/ .
 <br>
-Документация poetry - https://python-poetry.org/docs/#installing-with-the-official-installer .
+Poetry documentation - https://python-poetry.org/docs/#installing-with-the-official-installer .
 
 <br>
 
-Инциализация виртуальной среды
+Initializing the virtual environment
 ```bash
 poetry install
 ```
