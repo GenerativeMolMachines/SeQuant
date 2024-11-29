@@ -1,5 +1,5 @@
 # SeQuant
-Package for generating embeddings using the author's neural network.
+In this study, we propose a novel approach to the interpretable representation of peptides that overcomes existing limitations. The developed methodology enables the creation of models with transparent decision making, improving their applicability by experimental scientists. Our development opens new possibilities for automated design of peptides, accelerating the process of creating new therapeutics and pushing the boundaries of AI applications in chemistry.
 ## Setup
 ```
 pip install requirements.txt
