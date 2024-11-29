@@ -1,5 +1,20 @@
 # SeQuant
 Package for generating embeddings using the author's neural network.
+## Setup
+```
+pip install requirements.txt
+```
+* pandas == 2.2.2
+* numpy == 1.26.4
+* requests == 2.32.3
+* json == 2.0.9
+* sklearn == 1.5.2
+* biopython == 1.84
+* joblib == 1.4.2
+* xgboost == 2.1.2
+
+## Getting Started With API
+On the [wiki page](https://github.com/GenerativeMolMachines/SeQuant/wiki/SequantAPI), we have listed documentation on how to use the API to get Sequant embeddings.
 
 ## Datasets description
 ### Benchmarking datasets
