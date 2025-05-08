@@ -62,23 +62,43 @@ def blosum62_encode(sequence):
     return encoded_vector
 
 
-def prot_bert_encode(sequence, model_name='Rostlab/prot_bert', device='GPU'):
+def prot_bert_encode_batch(sequences, model_name="Rostlab/prot_bert", device="GPU", batch_size=16):
     tokenizer = AutoTokenizer.from_pretrained(model_name, do_lower_case=False)
     model = TFAutoModel.from_pretrained(model_name, from_pt=True)
 
-    inputs = tokenizer(sequence, return_tensors='tf', padding=False, truncation=False)
+    sequences = [" ".join(list(seq)) for seq in sequences]
 
-    input_ids = inputs['input_ids']
-    attention_mask = inputs['attention_mask']
+    inputs = tokenizer(sequences, return_tensors="tf", padding=True, truncation=True)
 
-    with tf.device(f'/{device}:0'):
-        outputs = model(input_ids=input_ids, attention_mask=attention_mask, training=False)
+    input_ids = inputs["input_ids"]
+    attention_mask = inputs["attention_mask"]
 
-    hidden_states = outputs.last_hidden_state
+    embeddings = []
+    with tf.device(f"/{device}:0"):
+        for i in tqdm(range(0, len(sequences), batch_size), desc="Encoding batches"):
+            batch_input_ids = input_ids[i:i + batch_size]
+            batch_attention_mask = attention_mask[i:i + batch_size]
 
-    embedding = tf.reduce_mean(hidden_states, axis=1).numpy().squeeze()
+            outputs = model(input_ids=batch_input_ids, attention_mask=batch_attention_mask, training=False)
+            hidden_states = outputs.last_hidden_state
 
-    return embedding
+            batch_embeddings = tf.reduce_mean(hidden_states[:, 1:-1, :], axis=1).numpy()
+            embeddings.append(batch_embeddings)
+    embeddings = np.vstack(embeddings)
+    return embeddings
+
+
+def process_bert_dataset(df, encoding_func, encoding_name, pad_value):
+    encoded_data = encoding_func(df['sequence'].tolist())
+    max_len = max(len(vec) for vec in encoded_data)
+
+    encoded_data = np.array(
+        [np.pad(vec, (0, max_len - len(vec)), 'constant', constant_values=pad_value) for vec in encoded_data])
+
+    encoded_df = pd.DataFrame(encoded_data, index=df.index)
+    result_df = pd.concat([df, encoded_df], axis=1)
+
+    return result_df
 
 
 def process_dataset(df, encoding_func, pad_value):
@@ -123,7 +143,7 @@ for dataset in datasets:
     blosum62_df.to_csv(f'data/encoded/{dataset}_blosum62.csv', index=False)
 
     # ProtBERT encoding with padding 0
-    protbert_df = process_dataset(df, prot_bert_encode, pad_value=0)
+    protbert_df = process_bert_dataset(df, lambda seqs: prot_bert_encode_batch(seqs), 'protbert', pad_value=0)
     protbert_df.to_csv(f'data/encoded/{dataset}_protbert.csv', index=False)
 
 
